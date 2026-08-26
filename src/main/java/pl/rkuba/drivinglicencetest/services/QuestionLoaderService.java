@@ -73,7 +73,7 @@ public class QuestionLoaderService {
     public Question getQuestion(String[] line) {
         if (line == null || line[COL_NUM].isEmpty()) {
             throw new IllegalArgumentException("Question is not valid.");
-        };
+        }
 
         Question question;
         if(line[COL_ANSWER_A].isEmpty()) {

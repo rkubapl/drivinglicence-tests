@@ -1,10 +1,5 @@
 package pl.rkuba.drivinglicencetest.services;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -13,7 +8,6 @@ import pl.rkuba.drivinglicencetest.model.QuestionFilter;
 import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
 import pl.rkuba.drivinglicencetest.repository.QuestionSpecification;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor

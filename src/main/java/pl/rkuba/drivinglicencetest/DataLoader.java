@@ -1,8 +1,5 @@
 package pl.rkuba.drivinglicencetest;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvValidationException;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +12,6 @@ import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
 import pl.rkuba.drivinglicencetest.services.QuestionLoaderService;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @AllArgsConstructor
 @Component

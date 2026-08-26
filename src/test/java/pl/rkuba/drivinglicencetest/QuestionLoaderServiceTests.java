@@ -28,8 +28,6 @@ public class QuestionLoaderServiceTests {
         return new String[]{"1917","7249","Z jaką maksymalną dopuszczalną prędkością możesz jechać, kierując samochodem osobowym o dopuszczalnej masie całkowitej 3 t, na drodze ekspresowej jednojezdniowej?","120 km/h.","100 km/h.","90 km/h.","B","5A109.jpg","SPECJALISTYCZNY","3","B","","","","","At what maximum speed limit can you drive a passenger car of maximum permissible weight 3 t, on a single-carriage expressway?","120 km/h.","100 km/h.","90 km/h.","Mit welcher Höchstgeschwindigkeit darf man einen PkW mit dem zulässigen Gesamtgewicht auf einer Schnellstraße mit einer Fahrbahn fahren?","120 km/h","100 km/h","90 km/h","З якою максимальною швидкістю може їхати легковий автомобіль з максимальною дозволеною масою 3 т на швидкісній дорозі (S) з однією проїзною частиною?","120 км/год.","100 км/год.","90 км/год."};
     }
 
-    private String header = "Lp,Numer pytania,Pytanie,Odpowiedź A,Odpowiedź B,Odpowiedź C,Poprawna odp,Media,Zakres struktury,Liczba punktów,Kategorie,Nazwa media tłumaczenie migowe (PJM) treść pyt,Nazwa media tłumaczenie migowe (PJM) treść odp A,Nazwa media tłumaczenie migowe (PJM) treść odp B,Nazwa media tłumaczenie migowe (PJM) treść odp C,Pytanie [EN],Odpowiedź A [EN],Odpowiedź B [EN],Odpowiedź C [EN],Pytanie [D],Odpowiedź A [D],Odpowiedź B [D],Odpowiedź C [D],Pytanie [UA],Odpowiedź A [UA],Odpowiedź B [UA],Odpowiedź C [UA]\n";
-
     @Test
     void testBasicQuestion() {
         String[] testData = validBasic();
