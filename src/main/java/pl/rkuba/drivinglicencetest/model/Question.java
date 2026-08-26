@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="question_type", discriminatorType = DiscriminatorType.STRING)
-public class Question {
+public abstract class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,4 +45,6 @@ public class Question {
     public String toString() {
         return this.questionNumber.toString() + " " + this.question;
     }
+
+    public abstract boolean isCorrect(GivenAnswer answer);
 }

@@ -7,10 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import pl.rkuba.drivinglicencetest.model.BasicQuestion;
-import pl.rkuba.drivinglicencetest.model.Category;
-import pl.rkuba.drivinglicencetest.model.Question;
-import pl.rkuba.drivinglicencetest.model.SpecialistQuestion;
+import pl.rkuba.drivinglicencetest.model.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -66,7 +63,7 @@ public class QuestionLoaderService {
         if(!ALLOWED_SPECIALIST_ANSWERS.contains(correctAnswer)) {
             throw new IllegalArgumentException(String.format("Correct answer \"%s\" is not valid for specialist type question", line[COL_CORRECT_ANSWER]));
         }
-        specialistQuestion.setCorrectAnswerString(correctAnswer);
+        specialistQuestion.setCorrectAnswerLetter(AnswerLetter.valueOf(correctAnswer));
         return specialistQuestion;
     }
 

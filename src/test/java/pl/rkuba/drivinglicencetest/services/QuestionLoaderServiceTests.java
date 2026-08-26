@@ -1,14 +1,10 @@
-package pl.rkuba.drivinglicencetest;
+package pl.rkuba.drivinglicencetest.services;
 
 import com.opencsv.exceptions.CsvValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import pl.rkuba.drivinglicencetest.model.BasicQuestion;
-import pl.rkuba.drivinglicencetest.model.Category;
-import pl.rkuba.drivinglicencetest.model.Question;
-import pl.rkuba.drivinglicencetest.model.SpecialistQuestion;
-import pl.rkuba.drivinglicencetest.services.QuestionLoaderService;
+import pl.rkuba.drivinglicencetest.model.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -64,7 +60,7 @@ public class QuestionLoaderServiceTests {
         assertEquals("120 km/h.", questionResult.getAnswerA());
         assertEquals("100 km/h.", questionResult.getAnswerB());
         assertEquals("90 km/h.", questionResult.getAnswerC());
-        assertEquals("B", questionResult.getCorrectAnswerString());
+        assertEquals(AnswerLetter.B, questionResult.getCorrectAnswerLetter());
     }
 
     @Test
@@ -130,7 +126,7 @@ public class QuestionLoaderServiceTests {
 
     @Test
     void testNullData() {
-        assertThrows(NumberFormatException.class, () -> service.getQuestion(null));
+        assertThrows(IllegalArgumentException.class, () -> service.getQuestion(null));
     }
 
     @Test
