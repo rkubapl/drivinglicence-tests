@@ -1,12 +1,17 @@
 package pl.rkuba.drivinglicencetest;
 
+import com.opencsv.exceptions.CsvValidationException;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import pl.rkuba.drivinglicencetest.model.BasicQuestion;
 import pl.rkuba.drivinglicencetest.model.Category;
 import pl.rkuba.drivinglicencetest.model.Question;
 import pl.rkuba.drivinglicencetest.model.SpecialistQuestion;
 import pl.rkuba.drivinglicencetest.services.QuestionLoaderService;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,6 +27,8 @@ public class QuestionLoaderServiceTests {
     private String[] validSpecialist() {
         return new String[]{"1917","7249","Z jaką maksymalną dopuszczalną prędkością możesz jechać, kierując samochodem osobowym o dopuszczalnej masie całkowitej 3 t, na drodze ekspresowej jednojezdniowej?","120 km/h.","100 km/h.","90 km/h.","B","5A109.jpg","SPECJALISTYCZNY","3","B","","","","","At what maximum speed limit can you drive a passenger car of maximum permissible weight 3 t, on a single-carriage expressway?","120 km/h.","100 km/h.","90 km/h.","Mit welcher Höchstgeschwindigkeit darf man einen PkW mit dem zulässigen Gesamtgewicht auf einer Schnellstraße mit einer Fahrbahn fahren?","120 km/h","100 km/h","90 km/h","З якою максимальною швидкістю може їхати легковий автомобіль з максимальною дозволеною масою 3 т на швидкісній дорозі (S) з однією проїзною частиною?","120 км/год.","100 км/год.","90 км/год."};
     }
+
+    private String header = "Lp,Numer pytania,Pytanie,Odpowiedź A,Odpowiedź B,Odpowiedź C,Poprawna odp,Media,Zakres struktury,Liczba punktów,Kategorie,Nazwa media tłumaczenie migowe (PJM) treść pyt,Nazwa media tłumaczenie migowe (PJM) treść odp A,Nazwa media tłumaczenie migowe (PJM) treść odp B,Nazwa media tłumaczenie migowe (PJM) treść odp C,Pytanie [EN],Odpowiedź A [EN],Odpowiedź B [EN],Odpowiedź C [EN],Pytanie [D],Odpowiedź A [D],Odpowiedź B [D],Odpowiedź C [D],Pytanie [UA],Odpowiedź A [UA],Odpowiedź B [UA],Odpowiedź C [UA]\n";
 
     @Test
     void testBasicQuestion() {
@@ -111,12 +118,21 @@ public class QuestionLoaderServiceTests {
         String[] testData = validBasic();
         testData[QuestionLoaderService.COL_NUM] = "";
 
-        assertNull(service.getQuestion(testData));
+        assertThrows(IllegalArgumentException.class, () -> service.getQuestion(testData));
     }
 
     @Test
+    void testEmptyQuestion() {
+        String[] testData = validBasic();
+        testData[QuestionLoaderService.COL_QUESTION] = "";
+
+        assertThrows(IllegalArgumentException.class, () -> service.getQuestion(testData));
+    }
+
+
+    @Test
     void testNullData() {
-        assertNull(service.getQuestion(null));
+        assertThrows(NumberFormatException.class, () -> service.getQuestion(null));
     }
 
     @Test
@@ -144,5 +160,40 @@ public class QuestionLoaderServiceTests {
         assertNotNull(result);
         assertEquals(99, result.getQuestionNumber());
         assertEquals("", result.getMedia());
+    }
+
+    @Test
+    void testMultipleQuestions() throws CsvValidationException, IOException {
+        String inputData = """
+        Lp,Numer pytania,Pytanie,Odpowiedź A,Odpowiedź B,Odpowiedź C,Poprawna odp,Media,Zakres struktury,Liczba punktów,Kategorie,Nazwa media tłumaczenie migowe (PJM) treść pyt,Nazwa media tłumaczenie migowe (PJM) treść odp A,Nazwa media tłumaczenie migowe (PJM) treść odp B,Nazwa media tłumaczenie migowe (PJM) treść odp C,Pytanie [EN],Odpowiedź A [EN],Odpowiedź B [EN],Odpowiedź C [EN],Pytanie [D],Odpowiedź A [D],Odpowiedź B [D],Odpowiedź C [D],Pytanie [UA],Odpowiedź A [UA],Odpowiedź B [UA],Odpowiedź C [UA]
+        1,99,Czy w tej sytuacji masz obowiązek zatrzymać pojazd?,,,,T,AK_D05_06_org.wmv,PODSTAWOWY,3,"A,B,C,D,T,AM,A1,A2,B1,C1,D1",,,,,Are you obliged to stop the vehicle in the presented situation?,,,,"Bist du in der dargestellten Situation dazu verpflichtet, das Fahrzeug anzuhalten?",,,,Чи зобов'язані Ви зупинити свій транспортний засіб у цій ситуації?,,,
+        2,100,Czy w tej sytuacji masz obowiązek zatrzymać pojazd?,,,,T,AK_D10_30_org.wmv,PODSTAWOWY,3,"A,B,C,D,T,AM,A1,A2,B1,C1,D1",pjm100.wmv,,,,Are you obliged to stop the vehicle in the presented situation?,,,,"Sind Sie in der dargestellten Situation dazu verpflichtet, das Fahrzeug anzuhalten?",,,,Чи зобов'язані Ви зупинити свій транспортний засіб у цій ситуації?,,,
+        249,1864,"Jakiej kategorii prawo jazdy jest wymagane, gdy chcesz kierować czterokołowcem innym niż lekki?",B1.,A.,AM.,A,,SPECJALISTYCZNY,1,"B,B1",pjm1864.wmv,pjm1864a.wmv,pjm1864b.wmv,pjm1864c.wmv,What category driving license should you have when driving a four-wheeled vehicle other than a light one?,B1.,A.,AM.,"Welcher Kategorie Führerschein soll man haben, wenn man ein anderes als leichtes Vierrad-Fahrzeug lenkt?",B1.,A.,AM.,"Яка категорія водійських прав вимагається для керування квадро циклом (чотириколісним мікроавтомобілем), який не є легким квадроциклом?",B1.,A.,AM.
+        """;
+        Resource resource = new ByteArrayResource(inputData.getBytes());
+        List<Question> response = service.getQuestionsFromResource(resource);
+        assertEquals(3, response.size());
+    }
+
+    @Test
+    void testMultipleQuestionsWithInvalid() throws CsvValidationException, IOException {
+        String inputData = """
+        Lp,Numer pytania,Pytanie,Odpowiedź A,Odpowiedź B,Odpowiedź C,Poprawna odp,Media,Zakres struktury,Liczba punktów,Kategorie,Nazwa media tłumaczenie migowe (PJM) treść pyt,Nazwa media tłumaczenie migowe (PJM) treść odp A,Nazwa media tłumaczenie migowe (PJM) treść odp B,Nazwa media tłumaczenie migowe (PJM) treść odp C,Pytanie [EN],Odpowiedź A [EN],Odpowiedź B [EN],Odpowiedź C [EN],Pytanie [D],Odpowiedź A [D],Odpowiedź B [D],Odpowiedź C [D],Pytanie [UA],Odpowiedź A [UA],Odpowiedź B [UA],Odpowiedź C [UA]
+        1,99,Czy w tej sytuacji masz obowiązek zatrzymać pojazd?,,,,T,AK_D05_06_org.wmv,PODSTAWOWY,3,"A,B,C,D,T,AM,A1,A2,B1,C1,D1",,,,,Are you obliged to stop the vehicle in the presented situation?,,,,"Bist du in der dargestellten Situation dazu verpflichtet, das Fahrzeug anzuhalten?",,,,Чи зобов'язані Ви зупинити свій транспортний засіб у цій ситуації?,,,
+        2,100,Czy w tej sytuacji masz obowiązek zatrzymać pojazd?,,,,T,AK_D10_30_org.wmv,PODSTAWOWY,3,"A,B,C,D,T,AM,A1,A2,B1,C1,D1",pjm100.wmv,,,,Are you obliged to stop the vehicle in the presented situation?,,,,"Sind Sie in der dargestellten Situation dazu verpflichtet, das Fahrzeug anzuhalten?",,,,Чи зобов'язані Ви зупинити свій транспортний засіб у цій ситуації?,,,
+        249,1864,"Jakiej kategorii prawo jazdy jest wymagane, gdy chcesz kierować czterokołowcem innym niż lekki?",B1.,A.,AM.,A,,SPECJALISTYCZNY,1,"B,B1",pjm1864.wmv,pjm1864a.wmv,pjm1864b.wmv,pjm1864c.wmv,What category driving license should you have when driving a four-wheeled vehicle other than a light one?,B1.,A.,AM.,"Welcher Kategorie Führerschein soll man haben, wenn man ein anderes als leichtes Vierrad-Fahrzeug lenkt?",B1.,A.,AM.,"Яка категорія водійських прав вимагається для керування квадро циклом (чотириколісним мікроавтомобілем), який не є легким квадроциклом?",B1.,A.,AM.
+        2,100,,,,,T,AK_D10_30_org.wmv,PODSTAWOWY,3,"A,B,C,D,T,AM,A1,A2,B1,C1,D1",pjm100.wmv,,,,Are you obliged to stop the vehicle in the presented situation?,,,,"Sind Sie in der dargestellten Situation dazu verpflichtet, das Fahrzeug anzuhalten?",,,,Чи зобов'язані Ви зупинити свій транспортний засіб у цій ситуації?,,,
+        """;
+        Resource resource = new ByteArrayResource(inputData.getBytes());
+        List<Question> response = service.getQuestionsFromResource(resource);
+        assertEquals(3, response.size());
+    }
+
+    @Test
+    void testEmptyInput() throws CsvValidationException, IOException {
+        String inputData = "";
+        Resource resource = new ByteArrayResource(inputData.getBytes());
+        List<Question> response = service.getQuestionsFromResource(resource);
+        assertEquals(0, response.size());
     }
 }

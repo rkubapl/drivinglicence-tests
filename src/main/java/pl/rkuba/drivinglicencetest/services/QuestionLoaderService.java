@@ -1,14 +1,24 @@
 package pl.rkuba.drivinglicencetest.services;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import pl.rkuba.drivinglicencetest.model.BasicQuestion;
 import pl.rkuba.drivinglicencetest.model.Category;
 import pl.rkuba.drivinglicencetest.model.Question;
 import pl.rkuba.drivinglicencetest.model.SpecialistQuestion;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,7 +71,9 @@ public class QuestionLoaderService {
     }
 
     public Question getQuestion(String[] line) {
-        if (line == null || line[COL_NUM].isEmpty()) return null;
+        if (line == null || line[COL_NUM].isEmpty()) {
+            throw new IllegalArgumentException("Question is not valid.");
+        };
 
         Question question;
         if(line[COL_ANSWER_A].isEmpty()) {
@@ -77,6 +89,10 @@ public class QuestionLoaderService {
         }
 
         question.setQuestionNumber(Integer.valueOf(line[COL_NUM]));
+
+        if(line[COL_QUESTION].isEmpty()) {
+            throw new IllegalArgumentException("Question can't be empty.");
+        }
         question.setQuestion(line[COL_QUESTION].trim());
 
         question.setMedia(line[COL_MEDIA]);
@@ -92,4 +108,26 @@ public class QuestionLoaderService {
         return question;
     }
 
+    public List<Question> getQuestionsFromResource(Resource resource) throws IOException, CsvValidationException {
+        List<Question> questions = new ArrayList<>();
+        int failed = 0;
+
+        try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8);
+             CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).build()) {
+
+            String[] line;
+            while ((line = csvReader.readNext()) != null) {
+                try {
+                    Question question = getQuestion(line);
+                    questions.add(question);
+                } catch(Exception ex) {
+                    logger.error("Failed to parse questions.csv: {}", Arrays.toString(line).strip(), ex);
+                    failed++;
+                }
+            }
+        }
+
+        logger.info("Loaded {} questions from CSV file ({} failed)", questions.size(), failed);
+        return questions;
+    }
 }

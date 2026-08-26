@@ -3,6 +3,7 @@ package pl.rkuba.drivinglicencetest;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@AllArgsConstructor
 @Component
 public class DataLoader implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
@@ -27,42 +29,11 @@ public class DataLoader implements CommandLineRunner {
     private final QuestionRepository questionRepository;
     private final ResourceLoader resourceLoader;
 
-    public DataLoader(QuestionLoaderService questionLoaderService, QuestionRepository questionRepository, ResourceLoader resourceLoader) {
-        this.questionLoaderService = questionLoaderService;
-        this.questionRepository = questionRepository;
-        this.resourceLoader = resourceLoader;
-    }
-
     @Override
     public void run(String... args) throws Exception {
         if(args.length == 0 || !args[0].equals("--load")) return;
         logger.info("Loading questions from questions.csv file...");
         Resource resource = resourceLoader.getResource("classpath:questions.csv");
-        questionRepository.saveAll(getQuestionsFromResource(resource));
-    }
-
-    private List<Question> getQuestionsFromResource(Resource resource) throws IOException, CsvValidationException {
-        List<Question> questions = new ArrayList<>();
-        int failed = 0;
-
-        try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8);
-            CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).build()) {
-
-            String[] line;
-            while ((line = csvReader.readNext()) != null) {
-                try {
-                    Question question = questionLoaderService.getQuestion(line);
-                    if(question != null) {
-                        questions.add(question);
-                    }
-                } catch(Exception ex) {
-                    logger.error("Failed to parse questions.csv: {}", Arrays.toString(line).strip(), ex);
-                    failed++;
-                }
-            }
-        }
-
-        logger.info("Loaded {} questions from CSV file ({} failed)", questions.size(), failed);
-        return questions;
+        questionRepository.saveAll(questionLoaderService.getQuestionsFromResource(resource));
     }
 }

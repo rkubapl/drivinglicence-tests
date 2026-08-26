@@ -5,6 +5,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import pl.rkuba.drivinglicencetest.model.Question;
@@ -15,15 +16,11 @@ import pl.rkuba.drivinglicencetest.repository.QuestionSpecification;
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class QuestionService {
     private final QuestionSpecification questionSpecification;
     private final QuestionRepository questionRepository;
-
-    public QuestionService(QuestionSpecification questionSpecification, QuestionRepository questionRepository) {
-        this.questionSpecification = questionSpecification;
-        this.questionRepository = questionRepository;
-    }
 
     public List<Question> findQuestionByFilter(QuestionFilter questionFilter) {
         Specification<Question> spec = Specification.unrestricted();
