@@ -1,4 +1,4 @@
-package pl.rkuba.drivinglicencetest.services;
+package pl.rkuba.drivinglicencetest.service;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -7,7 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import pl.rkuba.drivinglicencetest.model.*;
+import pl.rkuba.drivinglicencetest.model.enums.AnswerLetter;
+import pl.rkuba.drivinglicencetest.model.entity.BasicQuestion;
+import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.model.entity.SpecialistQuestion;
+import pl.rkuba.drivinglicencetest.model.entity.Question;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -68,7 +72,7 @@ public class QuestionLoaderService {
     }
 
     public Question getQuestion(String[] line) {
-        if (line == null || line[COL_NUM].isEmpty()) {
+        if (line == null || line.length != 27 || line[COL_NUM].isEmpty()) {
             throw new IllegalArgumentException("Question is not valid.");
         }
 

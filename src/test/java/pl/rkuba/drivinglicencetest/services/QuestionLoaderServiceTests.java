@@ -4,14 +4,19 @@ import com.opencsv.exceptions.CsvValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import pl.rkuba.drivinglicencetest.model.*;
+import pl.rkuba.drivinglicencetest.model.enums.AnswerLetter;
+import pl.rkuba.drivinglicencetest.model.entity.BasicQuestion;
+import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.model.entity.SpecialistQuestion;
+import pl.rkuba.drivinglicencetest.model.entity.Question;
+import pl.rkuba.drivinglicencetest.service.QuestionLoaderService;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static pl.rkuba.drivinglicencetest.model.Category.*;
+import static pl.rkuba.drivinglicencetest.model.enums.Category.*;
 
 public class QuestionLoaderServiceTests {
     private final QuestionLoaderService service = new QuestionLoaderService();
@@ -81,6 +86,12 @@ public class QuestionLoaderServiceTests {
         Question result = service.getQuestion(testData);
         assertNotNull(result);
         assertInstanceOf(BasicQuestion.class, result);
+    }
+
+    @Test
+    void testInvalidColumnSize() {
+        String[] testData = {"1"};
+        assertThrows(IllegalArgumentException.class, () -> service.getQuestion(testData));
     }
 
     @Test

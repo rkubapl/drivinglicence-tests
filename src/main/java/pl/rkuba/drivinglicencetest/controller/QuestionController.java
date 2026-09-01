@@ -1,31 +1,44 @@
 package pl.rkuba.drivinglicencetest.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import pl.rkuba.drivinglicencetest.dto.controller.AnswerDto;
-import pl.rkuba.drivinglicencetest.model.*;
-import pl.rkuba.drivinglicencetest.services.QuestionService;
-import pl.rkuba.drivinglicencetest.services.UserAnswerService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
+import pl.rkuba.drivinglicencetest.model.dto.AnswerRequest;
+import pl.rkuba.drivinglicencetest.model.dto.QuestionFilter;
+import pl.rkuba.drivinglicencetest.model.dto.StatisticsResponse;
+import pl.rkuba.drivinglicencetest.model.entity.Question;
+import pl.rkuba.drivinglicencetest.model.entity.UserAnswer;
+import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.service.QuestionService;
+import pl.rkuba.drivinglicencetest.service.UserAnswerService;
 
 import java.util.List;
 
 @AllArgsConstructor
 @RestController
+@RequestMapping("/v1")
 public class QuestionController {
     private final QuestionService questionService;
     private final UserAnswerService userAnswerService;
 
-    @PostMapping(path = "/questions")
-    public List<Question> getQuestions(@RequestBody QuestionFilter filter) {
-        return questionService.findQuestionByFilter(filter);
+    @GetMapping(path = "/questions")
+    public List<Question> questions(QuestionFilter filter, @AuthenticationPrincipal Jwt principal) {
+        return questionService.findQuestionByFilter(filter.toQuestionSpec(), principal);
+    }
+
+    @GetMapping(path = "/exam")
+    public List<Question> exam(Category category, @AuthenticationPrincipal Jwt principal) {
+        return questionService.generateExamQuestions(category, principal);
     }
 
     @PostMapping(path = "/answer")
-    public UserAnswer answer(@RequestBody AnswerDto answerDto) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userAnswerService.saveUserAnswer(answerDto, userId);
+    public UserAnswer saveAnswer(@RequestBody AnswerRequest answerRequest, @AuthenticationPrincipal Jwt principal) {
+        return userAnswerService.saveUserAnswer(answerRequest, principal);
+    }
+
+    @GetMapping(path = "/statistics")
+    public StatisticsResponse statistics(@AuthenticationPrincipal Jwt principal) {
+        return userAnswerService.getUserStatistics(principal);
     }
 }

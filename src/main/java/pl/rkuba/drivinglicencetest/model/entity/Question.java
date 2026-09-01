@@ -1,9 +1,11 @@
-package pl.rkuba.drivinglicencetest.model;
+package pl.rkuba.drivinglicencetest.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.model.enums.GivenAnswer;
 
 import java.util.Set;
 
@@ -30,7 +32,7 @@ public abstract class Question {
     @Column(nullable = false, length = 1000)
     private String question;
 
-    @ElementCollection(targetClass = Category.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = Category.class, fetch = FetchType.LAZY)
     @CollectionTable(
         name = "question_categories",
         joinColumns = @JoinColumn(name = "question_id"),
@@ -42,9 +44,6 @@ public abstract class Question {
     @Enumerated(EnumType.STRING)
     private Set<Category> categories;
 
-    public String toString() {
-        return this.questionNumber.toString() + " " + this.question;
-    }
-
     public abstract boolean isCorrect(GivenAnswer answer);
+    public abstract boolean isValidAnswer(GivenAnswer answer);
 }

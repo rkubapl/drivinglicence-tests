@@ -1,10 +1,11 @@
-package pl.rkuba.drivinglicencetest.model;
+package pl.rkuba.drivinglicencetest.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CurrentTimestamp;
+import pl.rkuba.drivinglicencetest.model.enums.GivenAnswer;
 
 import java.time.LocalDateTime;
 

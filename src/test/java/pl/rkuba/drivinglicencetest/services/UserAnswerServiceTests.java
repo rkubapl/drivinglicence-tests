@@ -5,11 +5,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.rkuba.drivinglicencetest.dto.controller.AnswerDto;
-import pl.rkuba.drivinglicencetest.model.*;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.server.ResponseStatusException;
+import pl.rkuba.drivinglicencetest.model.dto.AnswerRequest;
+import pl.rkuba.drivinglicencetest.model.entity.BasicQuestion;
+import pl.rkuba.drivinglicencetest.model.entity.SpecialistQuestion;
+import pl.rkuba.drivinglicencetest.model.entity.UserAnswer;
+import pl.rkuba.drivinglicencetest.model.enums.AnswerLetter;
+import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.model.enums.GivenAnswer;
 import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
 import pl.rkuba.drivinglicencetest.repository.UserAnswerRepository;
+import pl.rkuba.drivinglicencetest.service.UserAnswerService;
 
 import java.util.Optional;
 import java.util.Set;
@@ -58,14 +67,17 @@ public class UserAnswerServiceTests {
 
     @Test
     void testBasicQuestionUserAnswerSave() {
-        AnswerDto answerDto = new AnswerDto(1L, GivenAnswer.T);
+        AnswerRequest answerRequest = new AnswerRequest(1L, GivenAnswer.T);
 
         BasicQuestion question = basicQuestion();
-        given(questionRepository.findById(answerDto.questionId())).willReturn(Optional.of(question));
+        given(questionRepository.findById(answerRequest.questionId())).willReturn(Optional.of(question));
         when(userAnswerRepository.save(any(UserAnswer.class))).thenReturn(new UserAnswer());
 
+        Jwt mockJwt = Mockito.mock(Jwt.class);
+        Mockito.when(mockJwt.getSubject()).thenReturn("ea15b99f-e02a-40eb-bbfb-c352b4b8451a");
+
         ArgumentCaptor<UserAnswer> captor = ArgumentCaptor.forClass(UserAnswer.class);
-        userAnswerService.saveUserAnswer(answerDto, "ea15b99f-e02a-40eb-bbfb-c352b4b8451a");
+        userAnswerService.saveUserAnswer(answerRequest, mockJwt);
 
         verify(userAnswerRepository).save(captor.capture());
         UserAnswer saved = captor.getValue();
@@ -76,14 +88,17 @@ public class UserAnswerServiceTests {
 
     @Test
     void testSpecialistQuestionUserAnswerSave() {
-        AnswerDto answerDto = new AnswerDto(1L, GivenAnswer.C);
+        AnswerRequest answerRequest = new AnswerRequest(1L, GivenAnswer.C);
 
         SpecialistQuestion question = specialistQuestion();
-        given(questionRepository.findById(answerDto.questionId())).willReturn(Optional.of(question));
+        given(questionRepository.findById(answerRequest.questionId())).willReturn(Optional.of(question));
         when(userAnswerRepository.save(any(UserAnswer.class))).thenReturn(new UserAnswer());
 
+        Jwt mockJwt = Mockito.mock(Jwt.class);
+        Mockito.when(mockJwt.getSubject()).thenReturn("ea15b99f-e02a-40eb-bbfb-c352b4b8451a");
+
         ArgumentCaptor<UserAnswer> captor = ArgumentCaptor.forClass(UserAnswer.class);
-        userAnswerService.saveUserAnswer(answerDto, "ea15b99f-e02a-40eb-bbfb-c352b4b8451a");
+        userAnswerService.saveUserAnswer(answerRequest, mockJwt);
 
         verify(userAnswerRepository).save(captor.capture());
         UserAnswer saved = captor.getValue();
@@ -94,11 +109,14 @@ public class UserAnswerServiceTests {
 
     @Test
     void testNotAllowedAnswerToSpecialistQuestion() {
-        AnswerDto answerDto = new AnswerDto(1L, GivenAnswer.T);
+        AnswerRequest answerRequest = new AnswerRequest(1L, GivenAnswer.T);
 
         SpecialistQuestion question = specialistQuestion();
-        given(questionRepository.findById(answerDto.questionId())).willReturn(Optional.of(question));
+        given(questionRepository.findById(answerRequest.questionId())).willReturn(Optional.of(question));
 
-        assertThrows(IllegalArgumentException.class, () -> userAnswerService.saveUserAnswer(answerDto, "ea15b99f-e02a-40eb-bbfb-c352b4b8451a"));
+        Jwt mockJwt = Mockito.mock(Jwt.class);
+        Mockito.when(mockJwt.getSubject()).thenReturn("ea15b99f-e02a-40eb-bbfb-c352b4b8451a");
+
+        assertThrows(ResponseStatusException.class, () -> userAnswerService.saveUserAnswer(answerRequest, mockJwt));
     }
 }

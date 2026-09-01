@@ -7,16 +7,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import pl.rkuba.drivinglicencetest.model.*;
 import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
-import pl.rkuba.drivinglicencetest.services.QuestionLoaderService;
-
-import java.io.*;
+import pl.rkuba.drivinglicencetest.service.QuestionLoaderService;
 
 @AllArgsConstructor
 @Component
-public class DataLoader implements CommandLineRunner {
-    private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
+public class DataLoaderRunner implements CommandLineRunner {
+    private static final Logger logger = LoggerFactory.getLogger(DataLoaderRunner.class);
 
     private final QuestionLoaderService questionLoaderService;
     private final QuestionRepository questionRepository;
