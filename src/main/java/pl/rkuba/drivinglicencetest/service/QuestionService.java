@@ -1,17 +1,20 @@
 package pl.rkuba.drivinglicencetest.service;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import pl.rkuba.drivinglicencetest.model.dto.QuestionSearchSpec;
+import pl.rkuba.drivinglicencetest.model.dto.QuestionFilter;
+import pl.rkuba.drivinglicencetest.model.dto.RandomQuestionFilter;
 import pl.rkuba.drivinglicencetest.model.entity.Question;
 import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
 import pl.rkuba.drivinglicencetest.repository.QuestionSpecification;
 
 import java.util.ArrayList;
@@ -22,15 +25,11 @@ import java.util.List;
 public class QuestionService {
     private final QuestionSpecification questionSpecification;
     private final EntityManager em;
+    private final QuestionRepository questionRepository;
 
-    public List<Question> findQuestionByFilter(QuestionSearchSpec questionSpec, Jwt jwt) {
-        String userId = jwt.getSubject();
-
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Question> query = cb.createQuery(Question.class);
-        Root<Question> root = query.from(Question.class);
-
+    public Page<Question> findQuestionByFilter(QuestionFilter questionSpec, String userId) {
         Specification<Question> spec = Specification.unrestricted();
+
         if(questionSpec.getQuestionType() != null) {
             spec = spec.and(questionSpecification.hasQuestionType(questionSpec.getQuestionType()));
         }
@@ -46,41 +45,54 @@ public class QuestionService {
         if(questionSpec.getCategory() != null) {
             spec = spec.and(questionSpecification.hasCategory(questionSpec.getCategory()));
         }
-        if(questionSpec.getExcludeAnswered() != null && questionSpec.getExcludeAnswered()) {
+        if(questionSpec.isExcludeAnswered()) {
             spec = spec.and(questionSpecification.excludeAnswered(userId));
         }
-        if(questionSpec.getExcludeAnsweredCorrectly() != null && questionSpec.getExcludeAnsweredCorrectly()) {
+        if(questionSpec.isExcludeAnsweredCorrectly()) {
             spec = spec.and(questionSpecification.excludeAnsweredCorrectly(userId));
         }
-
-        Predicate predicate = spec.toPredicate(root, query, cb);
-        if (predicate != null) {
-            query.where(predicate);
+        if(questionSpec.isFavoriteOnly()) {
+            spec = spec.and(questionSpecification.favoriteOnly(userId));
         }
+
+        return questionRepository.findBy(spec,
+                fluent -> fluent.page(PageRequest.of(questionSpec.getPage(), questionSpec.getPageSize())));
+    }
+
+    public List<Question> getRandomQuestions(RandomQuestionFilter randomQuestionFilter) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Question> query = cb.createQuery(Question.class);
+        Root<Question> root = query.from(Question.class);
+
+        Specification<Question> spec = Specification.unrestricted();
+        spec = spec.and(questionSpecification.hasQuestionType(randomQuestionFilter.questionType()));
+        spec = spec.and(questionSpecification.hasCategory(randomQuestionFilter.category()));
+        spec = spec.and(questionSpecification.hasPoints(randomQuestionFilter.points()));
+        query.where(spec.toPredicate(root, query, cb));
 
         query.orderBy(cb.asc(cb.function("RANDOM", Double.class)));
 
-        return em.createQuery(query)
-                .setMaxResults(questionSpec.getQuestionsAmount())
-                .getResultList();
+        TypedQuery<Question> typedQuery = em.createQuery(query);
+        typedQuery.setMaxResults(randomQuestionFilter.questionsAmount());
+        return typedQuery.getResultList();
     }
 
-    public List<Question> generateExamQuestions(Category category, Jwt jwt) {
+    public List<Question> generateExamQuestions(Category category) {
         //https://www.gov.pl/web/infrastruktura/prawo-jazdy
         //W części podstawowej jest 10 pytań za 3 punkty, 6 pytań za 2 punkty i 4 pytania za 1 punkt.
         //W części specjalistycznej (na poszczególne kategorie): 6 pytań za 3 punkty, 4 pytania za 2 punkty, 2 pytania za 1 punkt.
 
-        List<QuestionSearchSpec> questionSearchSpecs = List.of(
-            new QuestionSearchSpec(category,"BASIC", 3, 10),
-            new QuestionSearchSpec(category,"BASIC", 2, 6),
-            new QuestionSearchSpec(category,"BASIC", 1, 4),
-            new QuestionSearchSpec(category,"SPECIALIST", 3, 6),
-            new QuestionSearchSpec(category,"SPECIALIST", 2, 4),
-            new QuestionSearchSpec(category,"SPECIALIST", 1, 2)
+        List<RandomQuestionFilter> questionSearchSpecs = List.of(
+            new RandomQuestionFilter(category,"BASIC", 3, 10),
+            new RandomQuestionFilter(category,"BASIC", 2, 6),
+            new RandomQuestionFilter(category,"BASIC", 1, 4),
+            new RandomQuestionFilter(category,"SPECIALIST", 3, 6),
+            new RandomQuestionFilter(category,"SPECIALIST", 2, 4),
+            new RandomQuestionFilter(category,"SPECIALIST", 1, 2)
         );
 
         return questionSearchSpecs.stream()
-                .map(spec -> findQuestionByFilter(spec, jwt))
+                .map(this::getRandomQuestions)
                 .collect(ArrayList::new, List::addAll, List::addAll);
     }
 }

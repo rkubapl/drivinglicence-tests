@@ -11,20 +11,13 @@ import pl.rkuba.drivinglicencetest.model.enums.Category;
 public class QuestionFilter {
     private String questionType;
     private Integer minPoints;
+    private Integer eqPoints;
     private Integer maxPoints;
     private Category category;
-    private Boolean excludeAnswered;
-    private Boolean excludeAnsweredCorrectly;
+    private boolean excludeAnswered = false;
+    private boolean excludeAnsweredCorrectly = false;
+    private boolean favoriteOnly = false;
 
-    public QuestionSearchSpec toQuestionSpec() {
-        return new QuestionSearchSpec(
-                this.questionType,
-                this.minPoints,
-                this.maxPoints,
-                this.category,
-                this.excludeAnswered,
-                this.excludeAnsweredCorrectly,
-                1,
-                true);
-    }
+    private int pageSize = 10;
+    private int page = 0;
 }
