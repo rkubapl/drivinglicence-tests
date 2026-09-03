@@ -13,7 +13,6 @@ import pl.rkuba.drivinglicencetest.model.dto.PageResponse;
 import pl.rkuba.drivinglicencetest.model.dto.QuestionFilter;
 import pl.rkuba.drivinglicencetest.model.entity.Question;
 import pl.rkuba.drivinglicencetest.model.enums.Category;
-import pl.rkuba.drivinglicencetest.model.exception.QuestionNotFoundException;
 import pl.rkuba.drivinglicencetest.service.QuestionService;
 import pl.rkuba.drivinglicencetest.service.UserFavoriteQuestionService;
 
@@ -43,8 +42,6 @@ public class QuestionController {
         String userId = principal.getSubject();
         try {
             userFavoriteQuestionService.addFavoriteQuestion(questionId, userId);
-        } catch (QuestionNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch(DataIntegrityViolationException e) {
             if (e.getCause() instanceof ConstraintViolationException) {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -57,11 +54,8 @@ public class QuestionController {
     @DeleteMapping(path = "/{questionId}/favorite")
     public ResponseEntity<Void> deleteFavorite(@PathVariable Long questionId, @AuthenticationPrincipal Jwt principal) {
         String userId = principal.getSubject();
-        try {
-            return userFavoriteQuestionService.removeFavoriteQuestion(questionId, userId) ?
+        return userFavoriteQuestionService.removeFavoriteQuestion(questionId, userId) ?
                     ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-        } catch (QuestionNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+
     }
 }

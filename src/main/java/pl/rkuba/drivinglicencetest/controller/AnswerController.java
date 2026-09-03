@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.rkuba.drivinglicencetest.model.dto.AnswerRequest;
 import pl.rkuba.drivinglicencetest.model.exception.InvalidAnswerException;
-import pl.rkuba.drivinglicencetest.model.exception.QuestionNotFoundException;
 import pl.rkuba.drivinglicencetest.service.UserAnswerService;
 
 @AllArgsConstructor
@@ -25,8 +24,6 @@ public class AnswerController {
         String userId = principal.getSubject();
         try {
             userAnswerService.saveUserAnswer(answerRequest, userId);
-        } catch (QuestionNotFoundException ex) {
-            return ResponseEntity.notFound().build();
         } catch (InvalidAnswerException ex) {
             return ResponseEntity.badRequest().build();
         }
