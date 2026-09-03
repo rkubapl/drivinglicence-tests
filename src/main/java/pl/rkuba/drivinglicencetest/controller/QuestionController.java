@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import pl.rkuba.drivinglicencetest.model.dto.PageResponse;
 import pl.rkuba.drivinglicencetest.model.dto.QuestionFilter;
+import pl.rkuba.drivinglicencetest.model.dto.QuestionResponse;
 import pl.rkuba.drivinglicencetest.model.entity.Question;
 import pl.rkuba.drivinglicencetest.model.enums.Category;
 import pl.rkuba.drivinglicencetest.service.QuestionService;
@@ -26,15 +27,17 @@ public class QuestionController {
     private final UserFavoriteQuestionService userFavoriteQuestionService;
 
     @GetMapping
-    public PageResponse<Question> questions(QuestionFilter filter, @AuthenticationPrincipal Jwt principal) {
+    public PageResponse<QuestionResponse> questions(QuestionFilter filter, @AuthenticationPrincipal Jwt principal) {
         String userId = principal.getSubject();
-        Page<Question> pageable = questionService.findQuestionByFilter(filter, userId);
-        return PageResponse.of(pageable);
+        Page<Question> page = questionService.findQuestionByFilter(filter, userId);
+        return PageResponse.of(page.map(QuestionResponse::from));
     }
 
     @GetMapping(path = "/exam")
-    public List<Question> exam(@RequestParam Category category) {
-        return questionService.generateExamQuestions(category);
+    public List<QuestionResponse> exam(@RequestParam Category category) {
+        return questionService.generateExamQuestions(category).stream()
+                .map(QuestionResponse::from)
+                .toList();
     }
 
     @PostMapping(path = "/{questionId}/favorite")
