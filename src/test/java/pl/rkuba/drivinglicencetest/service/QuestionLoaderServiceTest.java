@@ -1,4 +1,4 @@
-package pl.rkuba.drivinglicencetest.services;
+package pl.rkuba.drivinglicencetest.service;
 
 import com.opencsv.exceptions.CsvValidationException;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,6 @@ import pl.rkuba.drivinglicencetest.model.entity.BasicQuestion;
 import pl.rkuba.drivinglicencetest.model.enums.Category;
 import pl.rkuba.drivinglicencetest.model.entity.SpecialistQuestion;
 import pl.rkuba.drivinglicencetest.model.entity.Question;
-import pl.rkuba.drivinglicencetest.service.QuestionLoaderService;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static pl.rkuba.drivinglicencetest.model.enums.Category.*;
 
-public class QuestionLoaderServiceTests {
+public class QuestionLoaderServiceTest {
     private final QuestionLoaderService service = new QuestionLoaderService();
 
     private String[] validBasic() {

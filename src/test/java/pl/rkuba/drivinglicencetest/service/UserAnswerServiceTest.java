@@ -1,4 +1,4 @@
-package pl.rkuba.drivinglicencetest.services;
+package pl.rkuba.drivinglicencetest.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,26 +10,24 @@ import pl.rkuba.drivinglicencetest.model.dto.AnswerRequest;
 import pl.rkuba.drivinglicencetest.model.entity.BasicQuestion;
 import pl.rkuba.drivinglicencetest.model.entity.SpecialistQuestion;
 import pl.rkuba.drivinglicencetest.model.entity.UserAnswer;
-import pl.rkuba.drivinglicencetest.model.enums.AnswerLetter;
-import pl.rkuba.drivinglicencetest.model.enums.Category;
 import pl.rkuba.drivinglicencetest.model.enums.GivenAnswer;
 import pl.rkuba.drivinglicencetest.model.exception.InvalidAnswerException;
 import pl.rkuba.drivinglicencetest.model.exception.QuestionNotFoundException;
 import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
 import pl.rkuba.drivinglicencetest.repository.UserAnswerRepository;
-import pl.rkuba.drivinglicencetest.service.UserAnswerService;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static pl.rkuba.drivinglicencetest.QuestionFixtures.basicQuestion;
+import static pl.rkuba.drivinglicencetest.QuestionFixtures.specialistQuestion;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UserAnswerServiceTests {
+public class UserAnswerServiceTest {
     @Mock
     private QuestionRepository questionRepository;
 
@@ -38,31 +36,6 @@ public class UserAnswerServiceTests {
 
     @InjectMocks
     private UserAnswerService userAnswerService;
-
-    private BasicQuestion basicQuestion() {
-        BasicQuestion basicQuestion = new BasicQuestion();
-        basicQuestion.setQuestion("Question");
-        basicQuestion.setCorrectAnswer(true);
-        basicQuestion.setQuestionNumber(1);
-        basicQuestion.setMedia("image.jpg");
-        basicQuestion.setPoints(3);
-        basicQuestion.setCategories(Set.of(Category.B));
-        return basicQuestion;
-    }
-
-    private SpecialistQuestion specialistQuestion() {
-        SpecialistQuestion specialistQuestion = new SpecialistQuestion();
-        specialistQuestion.setQuestion("Question");
-        specialistQuestion.setQuestionNumber(1);
-        specialistQuestion.setMedia("image.jpg");
-        specialistQuestion.setPoints(3);
-        specialistQuestion.setCategories(Set.of(Category.B));
-        specialistQuestion.setAnswerA("120 km/h");
-        specialistQuestion.setAnswerB("140 km/h");
-        specialistQuestion.setAnswerC("No limit");
-        specialistQuestion.setCorrectAnswerLetter(AnswerLetter.B);
-        return specialistQuestion;
-    }
 
     @Test
     void testBasicQuestionUserAnswerSave() {
