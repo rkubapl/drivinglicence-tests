@@ -22,6 +22,13 @@ public final class QuestionFixtures {
         return q;
     }
 
+    public static BasicQuestion basicQuestion(int questionNumber) {
+        BasicQuestion basicQuestion = basicQuestion();
+        basicQuestion.setId(null);
+        basicQuestion.setQuestionNumber(questionNumber);
+        return basicQuestion;
+    }
+
     public static SpecialistQuestion specialistQuestion() {
         SpecialistQuestion q = new SpecialistQuestion();
         q.setQuestion("Question");
@@ -35,5 +42,12 @@ public final class QuestionFixtures {
         q.setCorrectAnswerLetter(AnswerLetter.B);
         q.setQuestionType("SPECIALIST");
         return q;
+    }
+
+    public static SpecialistQuestion specialistQuestion(int questionNumber) {
+        SpecialistQuestion specialistQuestion = specialistQuestion();
+        specialistQuestion.setId(null);
+        specialistQuestion.setQuestionNumber(questionNumber);
+        return specialistQuestion;
     }
 }
