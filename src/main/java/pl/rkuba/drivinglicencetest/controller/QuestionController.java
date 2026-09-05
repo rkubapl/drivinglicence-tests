@@ -14,6 +14,7 @@ import pl.rkuba.drivinglicencetest.model.dto.QuestionFilter;
 import pl.rkuba.drivinglicencetest.model.dto.QuestionResponse;
 import pl.rkuba.drivinglicencetest.model.entity.Question;
 import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.model.exception.InsufficientQuestionsException;
 import pl.rkuba.drivinglicencetest.service.QuestionService;
 import pl.rkuba.drivinglicencetest.service.UserFavoriteQuestionService;
 
@@ -34,10 +35,16 @@ public class QuestionController {
     }
 
     @GetMapping(path = "/exam")
-    public List<QuestionResponse> exam(@RequestParam Category category) {
-        return questionService.generateExamQuestions(category).stream()
-                .map(QuestionResponse::from)
-                .toList();
+    public ResponseEntity<List<QuestionResponse>> exam(@RequestParam Category category) {
+        List<QuestionResponse> questions;
+        try {
+            questions = questionService.generateExamQuestions(category).stream()
+                    .map(QuestionResponse::from)
+                    .toList();
+        } catch (InsufficientQuestionsException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        return ResponseEntity.ok(questions);
     }
 
     @PostMapping(path = "/{questionId}/favorite")

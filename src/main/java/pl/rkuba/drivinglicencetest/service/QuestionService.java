@@ -14,6 +14,7 @@ import pl.rkuba.drivinglicencetest.model.dto.QuestionFilter;
 import pl.rkuba.drivinglicencetest.model.dto.RandomQuestionFilter;
 import pl.rkuba.drivinglicencetest.model.entity.Question;
 import pl.rkuba.drivinglicencetest.model.enums.Category;
+import pl.rkuba.drivinglicencetest.model.exception.InsufficientQuestionsException;
 import pl.rkuba.drivinglicencetest.repository.QuestionRepository;
 import pl.rkuba.drivinglicencetest.repository.QuestionSpecification;
 
@@ -72,9 +73,14 @@ public class QuestionService {
 
         query.orderBy(cb.asc(cb.function("RANDOM", Double.class)));
 
-        TypedQuery<Question> typedQuery = em.createQuery(query);
-        typedQuery.setMaxResults(randomQuestionFilter.questionsAmount());
-        return typedQuery.getResultList();
+        TypedQuery<Question> typedQuery = em.createQuery(query)
+                .setMaxResults(randomQuestionFilter.questionsAmount());
+
+        List<Question> resultList = typedQuery.getResultList();
+        if(resultList.size() != randomQuestionFilter.questionsAmount()) {
+            throw new InsufficientQuestionsException("Not enough questions for " + randomQuestionFilter.category().name());
+        }
+        return resultList;
     }
 
     public List<Question> generateExamQuestions(Category category) {
